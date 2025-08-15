@@ -18,7 +18,7 @@
             --text-primary: #172b4d;
             --text-secondary: #6b778c;
             --border-color: #dfe1e6;
-            --shadow: 0px 10px D30px -5px rgba(0, 0, 0, 0.07);
+            --shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.07);
         }
 
         body {
@@ -89,7 +89,6 @@
             box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
         }
 
-        /* --- Nuevo Estilo para la Descripción del Prefijo --- */
         .prefix-description {
             font-size: 14px;
             color: var(--text-secondary);
@@ -142,15 +141,23 @@
         .log-error { color: #bf2600; font-weight: 600; }
         .log-info { color: #091e42; }
 
-        .folder-status {
+        /* --- ✨ NUEVOS ESTILOS PARA LA ZONA DE "ARRASTRAR Y SOLTAR" --- */
+        #drop-zone {
             font-weight: 600;
             color: var(--text-secondary);
             margin: 20px 0;
-            padding: 12px;
+            padding: 40px 20px; /* Aumentamos el padding para hacerla más grande */
             border-radius: 8px;
             background-color: #fafbfc;
-            border: 1px dashed var(--border-color);
-            transition: all 0.3s;
+            border: 2px dashed var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        #drop-zone.drag-over {
+            border-color: var(--primary-blue);
+            background-color: #e9f2ff;
+            color: var(--primary-blue);
         }
 
         hr { border: none; border-top: 1px solid #e9ecef; margin: 35px 0; }
@@ -215,8 +222,9 @@
         <hr>
 
         <h3>Paso 2: Ejecuta el proceso</h3>
-        <button id="select-folder-btn" class="button button-primary">1. Seleccionar Carpeta</button>
-        <p id="folder-status" class="folder-status">Aún no has seleccionado una carpeta.</p>
+        
+        <button id="select-folder-btn" class="button button-primary">1. Seleccionar Carpeta con un Clic</button>
+        <div id="drop-zone">📂 Arrastra y suelta la carpeta aquí 📂</div>
         <button id="rename-btn" class="button button-secondary" disabled>2. Renombrar Archivos PDF</button>
         
         <div id="log-container">
@@ -238,43 +246,45 @@
         const fechaInput = document.getElementById('fecha-input');
         const consecutivoInput = document.getElementById('consecutivo-input');
         const logContainer = document.getElementById('log-container');
-        const folderStatus = document.getElementById('folder-status');
-        // --- Nueva constante para la descripción ---
         const prefixDescription = document.getElementById('prefix-description');
+        
+        // --- ✨ NUEVA REFERENCIA AL ELEMENTO "DROP ZONE" ---
+        const dropZone = document.getElementById('drop-zone');
 
         let directoryHandle = null;
         
-        // --- Nueva función para actualizar la descripción ---
         function updateDescription() {
             const selectedOption = prefixSelect.options[prefixSelect.selectedIndex];
             prefixDescription.textContent = selectedOption.title || 'Selecciona un tipo de soporte.';
         }
 
-        // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', updateDescription);
         prefixSelect.addEventListener('change', updateDescription);
 
         function logMessage(message, type = 'info') {
             const entry = document.createElement('div');
-            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`; // Se usa innerHTML para iconos
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
             entry.classList.add('log-entry', `log-${type}`);
             logContainer.appendChild(entry);
             logContainer.scrollTop = logContainer.scrollHeight;
         }
 
-        selectFolderBtn.addEventListener('click', async () => {
+        // --- ✨ FUNCIÓN REFACTORIZADA PARA MANEJAR LA CARPETA SELECCIONADA ---
+        // Esta función ahora centraliza la lógica, sin importar si la carpeta
+        // vino de un clic o de arrastrar y soltar.
+        async function handleDirectorySelection(handle) {
             try {
-                if (typeof window.showDirectoryPicker !== 'function') {
-                    throw new Error('Función no soportada. Usa un navegador moderno y ejecuta desde un servidor local (localhost).');
+                if (!handle || handle.kind !== 'directory') {
+                    throw new Error('El elemento seleccionado no es una carpeta válida.');
                 }
-                directoryHandle = await window.showDirectoryPicker();
+                directoryHandle = handle;
                 const permissionStatus = await directoryHandle.requestPermission({ mode: 'readwrite' });
 
                 if (permissionStatus === 'granted') {
-                    folderStatus.textContent = `Carpeta seleccionada: "${directoryHandle.name}"`;
-                    folderStatus.style.color = '#00875a';
-                    folderStatus.style.borderColor = '#00875a';
-                    folderStatus.style.backgroundColor = '#e6fffa';
+                    dropZone.textContent = `Carpeta seleccionada: "${directoryHandle.name}"`;
+                    dropZone.style.color = '#00875a';
+                    dropZone.style.borderColor = '#00875a';
+                    dropZone.style.backgroundColor = '#e6fffa';
                     renameBtn.disabled = false;
                     logMessage(`Permiso concedido para la carpeta: ${directoryHandle.name}`, 'success');
                 } else {
@@ -283,14 +293,64 @@
             } catch (error) {
                 directoryHandle = null;
                 renameBtn.disabled = true;
-                folderStatus.textContent = 'No se seleccionó carpeta o se denegaron los permisos.';
-                folderStatus.style.color = '#bf2600';
-                folderStatus.style.borderColor = '#bf2600';
-                folderStatus.style.backgroundColor = '#fffae6';
+                dropZone.textContent = '❌ Error: No se pudo procesar la carpeta.';
+                dropZone.style.color = '#bf2600';
+                dropZone.style.borderColor = '#bf2600';
+                dropZone.style.backgroundColor = '#fffae6';
                 logMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // --- Event Listener para el botón de selección (simplificado) ---
+        selectFolderBtn.addEventListener('click', async () => {
+            try {
+                if (typeof window.showDirectoryPicker !== 'function') {
+                    throw new Error('Función no soportada. Usa un navegador moderno.');
+                }
+                const handle = await window.showDirectoryPicker();
+                await handleDirectorySelection(handle); // Llama a la nueva función centralizada
+            } catch (error) {
+                // El usuario cerró la ventana de selección, no es un error grave.
+                if (error.name !== 'AbortError') {
+                    logMessage(`Error al seleccionar carpeta: ${error.message}`, 'error');
+                }
             }
         });
 
+        // --- ✨ NUEVOS EVENT LISTENERS PARA "DRAG AND DROP" ---
+        
+        // 1. Previene el comportamiento por defecto del navegador al arrastrar algo sobre la zona.
+        dropZone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        // 2. Remueve el estilo visual cuando el elemento arrastrado sale de la zona.
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        // 3. El evento principal: se dispara cuando el usuario suelta la carpeta.
+        dropZone.addEventListener('drop', async (event) => {
+            event.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            // DataTransferItemList contiene los archivos/carpetas arrastrados
+            const items = event.dataTransfer.items;
+            if (items && items.length > 0) {
+                // Buscamos el primer elemento que sea una carpeta
+                for (const item of items) {
+                    const handle = await item.getAsFileSystemHandle();
+                    if (handle && handle.kind === 'directory') {
+                        await handleDirectorySelection(handle); // Usamos la misma función centralizada
+                        return; // Salimos del bucle una vez encontrada la carpeta
+                    }
+                }
+                 logMessage('Error: Por favor, arrastra solo una carpeta, no archivos.', 'error');
+            }
+        });
+
+        // --- El resto del código para renombrar permanece igual ---
         renameBtn.addEventListener('click', async () => {
             if (!directoryHandle) {
                 logMessage('Error: Debes seleccionar una carpeta primero.', 'error');
@@ -347,7 +407,6 @@
                 logMessage(`Ocurrió un error general: ${error.message}`, 'error');
             } finally {
                 logMessage(`Proceso finalizado. Se renombraron ${filesRenamed} archivos.`, 'info');
-                // --- Mensaje final para abrir la carpeta ---
                 if (directoryHandle) {
                     logMessage(`<b>✅ ¡Listo! Ya puedes revisar la carpeta "${directoryHandle.name}" en tu explorador de archivos.</b>`, 'success');
                 }
