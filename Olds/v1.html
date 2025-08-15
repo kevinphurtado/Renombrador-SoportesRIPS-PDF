@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renombrador de Archivos PDF</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #1a2533;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .button-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .button-primary:hover {
+            background-color: #0056b3;
+        }
+        .button-secondary {
+            background-color: #28a745;
+            color: white;
+        }
+        .button-secondary:hover {
+            background-color: #218838;
+        }
+        .button:disabled {
+            background-color: #cdd3d8;
+            cursor: not-allowed;
+        }
+        select {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+        }
+        #log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            text-align: left;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        .log-entry {
+            padding: 2px 5px;
+        }
+        .log-success {
+            color: #155724;
+        }
+        .log-error {
+            color: #721c24;
+            font-weight: bold;
+        }
+        .log-info {
+            color: #0c5460;
+        }
+        .folder-status {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Renombrador de Archivos PDF 📁</h1>
+        <p>Selecciona una carpeta y elige un prefijo para renombrar todos los archivos PDF que contiene.</p>
+
+        <div class="controls">
+            <button id="select-folder-btn" class="button button-primary">1. Seleccionar Carpeta</button>
+            <p id="folder-status" class="folder-status">Aún no has seleccionado una carpeta.</p>
+            
+            <select id="prefix-select" title="Selecciona un prefijo de la lista">
+                <option value="HEV_891600091_IPS8888_">HEV_891600091_IPS8888_</option>
+                <option value="EPI_891600091_IPS8888_">EPI_891600091_IPS8888_</option>
+                <option value="DQX_891600091_IPS8888_">DQX_891600091_IPS8888_</option>
+                <option value="RAN _891600091_IPS8888_">RAN _891600091_IPS8888_</option>
+                <option value="TAP__891600091_IPS8888_">TAP__891600091_IPS8888_</option>
+                <option value="TNA_891600091_IPS8888_">TNA_891600091_IPS8888_</option>
+                <option value="FAT_891600091_IPS8888_">FAT_891600091_IPS8888_</option>
+                <option value="FM0_891600091_IPS8888_">FM0_891600091_IPS8888_</option>
+                <option value="OPF_891600091_IPS8888_">OPF_891600091_IPS8888_</option>
+                <option value="LDP_891600091_IPS8888_">LDP_891600091_IPS8888_</option>
+                <option value="HAU_891600091_IPS8888_">HAU_891600091_IPS8888_</option>
+                <option value="HAO_891600091_IPS8888_">HAO_891600091_IPS8888_</option>
+                <option value="HAM_891600091_IPS8888_">HAM_891600091_IPS8888_</option>
+                <option value="PDE_891600091_IPS8888_">PDE_891600091_IPS8888_</option>
+            </select>
+            
+            <button id="rename-btn" class="button button-secondary" disabled>2. Renombrar Archivos</button>
+        </div>
+
+        <div id="log-container">
+            <div class="log-entry log-info">Esperando acciones...</div>
+        </div>
+    </div>
+
+    <script>
+        const selectFolderBtn = document.getElementById('select-folder-btn');
+        const renameBtn = document.getElementById('rename-btn');
+        const prefixSelect = document.getElementById('prefix-select');
+        const logContainer = document.getElementById('log-container');
+        const folderStatus = document.getElementById('folder-status');
+
+        let directoryHandle = null;
+
+        function logMessage(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            entry.classList.add('log-entry', `log-${type}`);
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll
+        }
+
+        selectFolderBtn.addEventListener('click', async () => {
+            try {
+                // Solicita al usuario que elija un directorio
+                directoryHandle = await window.showDirectoryPicker();
+                
+                // Pide permisos de lectura y escritura para ese directorio
+                const permissionStatus = await directoryHandle.requestPermission({ mode: 'readwrite' });
+
+                if (permissionStatus === 'granted') {
+                    folderStatus.textContent = `Carpeta seleccionada: "${directoryHandle.name}"`;
+                    folderStatus.style.color = '#28a745';
+                    renameBtn.disabled = false;
+                    logMessage(`Permiso concedido para la carpeta: ${directoryHandle.name}`, 'success');
+                } else {
+                    throw new Error('Permiso denegado por el usuario.');
+                }
+            } catch (error) {
+                directoryHandle = null;
+                renameBtn.disabled = true;
+                folderStatus.textContent = 'No se seleccionó ninguna carpeta o se denegaron los permisos.';
+                folderStatus.style.color = '#dc3545';
+                logMessage(`Error al seleccionar carpeta: ${error.message}`, 'error');
+            }
+        });
+
+        renameBtn.addEventListener('click', async () => {
+            if (!directoryHandle) {
+                logMessage('Error: Debes seleccionar una carpeta primero.', 'error');
+                return;
+            }
+
+            const selectedPrefix = prefixSelect.value;
+            if (!selectedPrefix) {
+                logMessage('Error: Debes seleccionar un prefijo.', 'error');
+                return;
+            }
+
+            renameBtn.disabled = true;
+            logMessage(`Iniciando proceso con prefijo: ${selectedPrefix}`, 'info');
+            let filesRenamed = 0;
+
+            try {
+                // Itera sobre todos los archivos y carpetas del directorio seleccionado
+                for await (const entry of directoryHandle.values()) {
+                    // Solo procesa archivos que terminen en .pdf (insensible a mayúsculas)
+                    if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.pdf')) {
+                        
+                        // Evita renombrar archivos que ya tienen el prefijo
+                        if (entry.name.startsWith(selectedPrefix)) {
+                            logMessage(`Saltando archivo (ya renombrado): ${entry.name}`, 'info');
+                            continue;
+                        }
+
+                        const newName = `${selectedPrefix}${entry.name}`;
+                        
+                        try {
+                            // "Renombrar" en esta API significa mover el contenido a un nuevo archivo y borrar el antiguo
+                            const file = await entry.getFile();
+                            const newFileHandle = await directoryHandle.getFileHandle(newName, { create: true });
+                            const writable = await newFileHandle.createWritable();
+                            await writable.write(file);
+                            await writable.close();
+
+                            // Borra el archivo original
+                            await directoryHandle.removeEntry(entry.name);
+                            
+                            logMessage(`Éxito: '${entry.name}' -> '${newName}'`, 'success');
+                            filesRenamed++;
+
+                        } catch (fileError) {
+                            logMessage(`Error al renombrar '${entry.name}': ${fileError.message}`, 'error');
+                        }
+                    }
+                }
+            } catch (error) {
+                logMessage(`Ocurrió un error general durante el proceso: ${error.message}`, 'error');
+            } finally {
+                logMessage(`Proceso finalizado. Se renombraron ${filesRenamed} archivos.`, 'info');
+                renameBtn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renombrador de Soportes RIPS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --container-bg: #fff;
+            --primary-blue: #0052cc;
+            --primary-blue-hover: #003d99;
+            --primary-green: #00875a;
+            --primary-green-hover: #006644;
+            --text-primary: #172b4d;
+            --text-secondary: #6b778c;
+            --border-color: #dfe1e6;
+            --shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.07);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 750px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 28px;
+            color: var(--text-primary);
+        }
+
+        p.subtitle {
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        h3 {
+            text-align: left;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        input, select {
+            padding: 10px 14px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.15);
+        }
+
+        .prefix-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .button {
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        .button-primary { background: var(--primary-blue); color: white; }
+        .button-primary:hover { background: var(--primary-blue-hover); }
+        .button-secondary { background: var(--primary-green); color: white; }
+        .button-secondary:hover { background: var(--primary-green-hover); }
+        .button:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
+
+        .folder-status {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fafbfc;
+            border: 1px dashed var(--border-color);
+        }
+
+        #log-container {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fafbfc;
+            border-radius: 8px;
+            text-align: left;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+        }
+
+        .log-entry { padding: 3px 0; }
+        .log-success { color: #00875a; }
+        .log-error { color: #bf2600; }
+        .log-info { color: #172b4d; }
+
+        footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #97a0af;
+        }
+
+        @media (max-width: 500px) {
+            h1 { font-size: 22px; }
+            p.subtitle { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Renombrador de Soportes</h1>
+        <p class="subtitle">Organiza tus archivos PDF según la estructura RIPS.</p>
+
+        <h3>Paso 1: Configura los datos</h3>
+        <div class="config-grid">
+            <div>
+                <label for="nit-input">NIT (sin dígito v.)</label>
+                <input type="text" id="nit-input" placeholder="Ej: 891600091">
+            </div>
+            <div>
+                <label for="codigo-input">Cód. Habilitación</label>
+                <input type="text" id="codigo-input" placeholder="Ej: IPS8888">
+            </div>
+            <div>
+                <label for="fecha-input">Fecha del Soporte (Opcional)</label>
+                <input type="date" id="fecha-input">
+            </div>
+            <div>
+                <label for="consecutivo-input">Consecutivo (Opcional)</label>
+                <input type="number" id="consecutivo-input" placeholder="Ej: 1" min="1">
+            </div>
+        </div>
+
+        <label for="prefix-select">Tipo de Soporte</label>
+        <select id="prefix-select">
+            <option value="HEV" title="Resumen de atención u hoja de evolución">HEV</option>
+            <option value="EPI" title="Epicrisis">EPI</option>
+            <option value="PDX" title="Resultado de procedimientos de apoyo diagnóstico">PDX</option>
+            <option value="DQX" title="Descripción quirúrgica">DQX</option>
+            <option value="RAN" title="Registro de anestesia">RAN</option>
+            <option value="CRC" title="Comprobante de recibido">CRC</option>
+            <option value="TAP" title="Traslado asistencial Pacientes">TAP</option>
+            <option value="TNA" title="Transporte no asistencial">TNA</option>
+            <option value="FAT" title="Factura SOAT o ADRES">FAT</option>
+            <option value="FMO" title="Factura material osteosíntesis">FMO</option>
+            <option value="OPF" title="Orden facultativa">OPF</option>
+            <option value="LDP" title="Lista de precios">LDP</option>
+            <option value="HAU" title="Hoja atención urgencia">HAU</option>
+            <option value="HAO" title="Hoja atención odontológica">HAO</option>
+            <option value="HAM" title="Hoja administración medicamentos">HAM</option>
+            <option value="PDE" title="Evidencia de trámite">PDE</option>
+        </select>
+        <p id="prefix-description" class="prefix-description"></p>
+
+        <h3>Paso 2: Ejecuta el proceso</h3>
+        <button id="select-folder-btn" class="button button-primary">1. Seleccionar Carpeta</button>
+        <p id="folder-status" class="folder-status">Aún no has seleccionado una carpeta.</p>
+        <button id="rename-btn" class="button button-secondary" disabled>2. Renombrar Archivos PDF</button>
+
+        <div id="log-container" aria-live="polite">
+            <div class="log-entry log-info">Esperando acciones...</div>
+        </div>
+
+        <footer>
+            Creado por Kevin Hurtado - Ajustado a la Resolución 2284 de 2023
+        </footer>
+    </div>
+
+    <script>
+        const prefixSelect = document.getElementById('prefix-select');
+        const prefixDescription = document.getElementById('prefix-description');
+        const selectFolderBtn = document.getElementById('select-folder-btn');
+        const renameBtn = document.getElementById('rename-btn');
+        const folderStatus = document.getElementById('folder-status');
+        const logContainer = document.getElementById('log-container');
+        const nitInput = document.getElementById('nit-input');
+        const codigoInput = document.getElementById('codigo-input');
+        const fechaInput = document.getElementById('fecha-input');
+        const consecutivoInput = document.getElementById('consecutivo-input');
+        let directoryHandle = null;
+
+        function updateDescription() {
+            const selected = prefixSelect.options[prefixSelect.selectedIndex];
+            prefixDescription.textContent = selected.title || 'Selecciona un tipo de soporte.';
+        }
+
+        function logMessage(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function setFolderStatus(text, color, bg) {
+            folderStatus.textContent = text;
+            folderStatus.style.color = color;
+            folderStatus.style.borderColor = color;
+            folderStatus.style.backgroundColor = bg;
+        }
+
+        document.addEventListener('DOMContentLoaded', updateDescription);
+        prefixSelect.addEventListener('change', updateDescription);
+
+        selectFolderBtn.addEventListener('click', async () => {
+            try {
+                if (!window.showDirectoryPicker) {
+                    throw new Error('Tu navegador no soporta esta función.');
+                }
+                directoryHandle = await window.showDirectoryPicker();
+                const permission = await directoryHandle.requestPermission({ mode: 'readwrite' });
+                if (permission === 'granted') {
+                    setFolderStatus(`Carpeta seleccionada: "${directoryHandle.name}"`, '#00875a', '#e6fffa');
+                    renameBtn.disabled = false;
+                    logMessage(`Permiso concedido para: ${directoryHandle.name}`, 'success');
+                } else {
+                    throw new Error('Permiso denegado.');
+                }
+            } catch (err) {
+                directoryHandle = null;
+                renameBtn.disabled = true;
+                setFolderStatus('No se seleccionó carpeta.', '#bf2600', '#fffae6');
+                logMessage(err.message, 'error');
+            }
+        });
+
+        renameBtn.addEventListener('click', async () => {
+            if (!directoryHandle) return logMessage('Debes seleccionar una carpeta primero.', 'error');
+            if (!prefixSelect.value || !nitInput.value || !codigoInput.value) {
+                return logMessage('Campos obligatorios: NIT, Cód. Habilitación y Tipo de Soporte.', 'error');
+            }
+            const fechaStr = fechaInput.value ? `_${fechaInput.value.replace(/-/g, '')}` : '';
+            const consecutivoStr = consecutivoInput.value ? `_${String(consecutivoInput.value).padStart(3, '0')}` : '';
+            const fullPrefix = `${prefixSelect.value}_${nitInput.value}_${codigoInput.value}${fechaStr}${consecutivoStr}_`;
+
+            renameBtn.disabled = true;
+            logMessage(`Iniciando con: ${fullPrefix}`, 'info');
+            let count = 0;
+
+            try {
+                for await (const entry of directoryHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.pdf')) {
+                        if (entry.name.startsWith(prefixSelect.value) && entry.name.includes(`_${nitInput.value}_`)) {
+                            logMessage(`Saltando: ${entry.name}`, 'info');
+                            continue;
+                        }
+                        const newName = `${fullPrefix}${entry.name}`;
+                        try {
+                            const file = await entry.getFile();
+                            const newFileHandle = await directoryHandle.getFileHandle(newName, { create: true });
+                            const writable = await newFileHandle.createWritable();
+                            await writable.write(file);
+                            await writable.close();
+                            await directoryHandle.removeEntry(entry.name);
+                            logMessage(`Renombrado: ${entry.name} → ${newName}`, 'success');
+                            count++;
+                        } catch (err) {
+                            logMessage(`Error en ${entry.name}: ${err.message}`, 'error');
+                        }
+                    }
+                }
+            } catch (err) {
+                logMessage(`Error general: ${err.message}`, 'error');
+            } finally {
+                logMessage(`Proceso finalizado. Total: ${count} archivo(s) renombrado(s).`, 'info');
+                renameBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
