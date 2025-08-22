@@ -145,6 +145,66 @@
 
         hr { border: none; border-top: 1px solid #e9ecef; margin: 40px 0; }
         footer { margin-top: 30px; font-size: 13px; color: #97a0af; text-align: center; }
+        footer a { color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+        footer a:hover { text-decoration: underline; }
+
+        /* Estilos de la Ventana Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Oculta por defecto */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            text-align: left;
+            animation: slide-down 0.3s ease-out;
+        }
+
+        @keyframes slide-down {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 22px;
+            color: var(--text-primary);
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
@@ -163,7 +223,7 @@
             </div>
             <div>
                 <label for="codigo-input">Número de Factura</label>
-                <input type="text" id="codigo-input" class="input-field" placeholder="Ej: FVE12345">
+                <input type="text" id="codigo-input" class="input-field" placeholder="Ej: IPS12345">
             </div>
              <div>
                 <label class="checkbox-label">
@@ -200,6 +260,7 @@
                     <option value="HAU" title="Hoja atención de urgencia">HAU</option>
                     <option value="HAO" title="Hoja atención odontológica">HAO</option>
                     <option value="HAM" title="Hoja de administración de medicamentos">HAM</option>
+                    <option value="OTR" title="Autorización, documento y factura">OTR</option>
                     <option value="PDE" title="Evidencia del envío del trámite respectivo">PDE</option>
                 </select>
                 <p id="prefix-description" class="prefix-description"></p>
@@ -234,8 +295,21 @@
         <div id="log-container"></div>
 
         <footer>
-            Creado por Kevin Hurtado - V2.1 Modern
+            Creado por Kevin Hurtado - V2.1 <a href="#" id="open-changelog">Ver lo nuevo.</a>
         </footer>
+    </div>
+
+    <div id="changelog-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Novedades de la Versión 2.1</h2>
+            <p>
+                Se agregó: <strong>"Revertir Nombres"</strong> para restaurar los nombres originales (la herramienta debe estar configurada con los mismos datos con los que se renombraron).
+	     <p>
+		Se agregó: <strong>Carga de Sesión</strong> ahora se guarda el último NIT utilizado en el almacenamiento local del navegador para agilizar futuros usos.
+		</p>
+            </p>
+        </div>
     </div>
 
     <script>
@@ -432,6 +506,33 @@
 
         renameBtn.addEventListener('click', () => processFiles('rename'));
         revertBtn.addEventListener('click', () => processFiles('revert'));
+
+        // --- Lógica de la Ventana Modal ---
+        const openChangelogLink = document.getElementById('open-changelog');
+        const changelogModal = document.getElementById('changelog-modal');
+        const closeModalBtn = changelogModal.querySelector('.modal-close');
+
+        function showModal() {
+            changelogModal.style.display = 'flex';
+        }
+
+        function hideModal() {
+            changelogModal.style.display = 'none';
+        }
+
+        openChangelogLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Previene que la página salte al inicio
+            showModal();
+        });
+
+        closeModalBtn.addEventListener('click', hideModal);
+
+        // Cierra la modal si se hace clic fuera del contenido
+        changelogModal.addEventListener('click', (e) => {
+            if (e.target === changelogModal) {
+                hideModal();
+            }
+        });
 
     </script>
 
