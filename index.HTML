@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renombrador y Reversor de Soportes RIPS</title>
+    <style>
+        :root {
+            --bg-color: #f4f7fa;
+            --container-bg: #ffffff;
+            --primary-blue: #0d6efd;
+            --primary-blue-hover: #0b5ed7;
+            --primary-green: #198754;
+            --primary-green-hover: #157347;
+            --primary-red: #dc3545;
+            --primary-red-hover: #bb2d3b;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: 0px 8px 24px rgba(0, 0, 0, 0.05);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--border-color);
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 32px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .header p { color: var(--text-secondary); margin-bottom: 0; font-size: 16px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 14px; }
+        .checkbox-label { display: flex; align-items: center; font-weight: 500; margin-bottom: 8px; cursor: pointer; }
+        .checkbox-label input { margin-right: 10px; width: 16px; height: 16px; }
+
+        .input-field, select {
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+        }
+
+        .input-field:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        }
+        
+        input:disabled, select:disabled { background-color: #f8f9fa; cursor: not-allowed; color: var(--text-secondary); }
+
+        .prefix-description {
+            font-size: 14px; color: var(--text-secondary); background-color: #f8f9fa;
+            border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;
+            margin-top: 10px; text-align: left; min-height: 20px;
+        }
+
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px; font-size: 16px; font-weight: 600; border: none;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out;
+            width: 100%; box-sizing: border-box;
+        }
+        .button:active { transform: scale(0.97); }
+        .button-primary { background-color: var(--primary-blue); color: white; }
+        .button-primary:hover { background-color: var(--primary-blue-hover); box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2); }
+        .button-secondary { background-color: var(--primary-green); color: white; }
+        .button-secondary:hover { background-color: var(--primary-green-hover); box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2); }
+        .button-danger { background-color: var(--primary-red); color: white; }
+        .button-danger:hover { background-color: var(--primary-red-hover); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2); }
+        .button:disabled { background-color: #e9ecef; color: #adb5bd; cursor: not-allowed; box-shadow: none; }
+        .button svg { width: 20px; height: 20px; }
+
+        #log-container {
+            margin-top: 25px; padding: 8px; background-color: #f8f9fa; border-radius: 8px;
+            text-align: left; height: 250px; overflow-y: auto; font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 13px; border: 1px solid var(--border-color);
+        }
+        
+        .log-entry { 
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; border-bottom: 1px solid #e9ecef; 
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-icon { width: 16px; height: 16px; flex-shrink: 0; }
+        .log-success { color: #146c43; }
+        .log-error { color: #b02a37; }
+        .log-info { color: #3b4a5d; }
+
+        #drop-zone {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            font-weight: 600; color: var(--text-secondary); margin: 20px 0; padding: 40px 20px;
+            border-radius: 12px; background-color: #f8f9fa; border: 2px dashed var(--border-color);
+            transition: all 0.3s ease; cursor: pointer; text-align: center;
+        }
+        #drop-zone.drag-over { border-color: var(--primary-blue); background-color: #e9f2ff; color: var(--primary-blue); }
+        #drop-zone svg { width: 48px; height: 48px; transition: transform 0.3s ease; }
+        #drop-zone.drag-over svg { transform: scale(1.1); }
+        .drop-zone-success { border-color: var(--primary-green) !important; color: var(--primary-green) !important; background-color: #e8f3ee !important; }
+
+        hr { border: none; border-top: 1px solid #e9ecef; margin: 40px 0; }
+        footer { margin-top: 30px; font-size: 13px; color: #97a0af; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>Renombrador de Soportes</h1>
+            <p>Configura los datos para organizar tus archivos PDF según la estructura RIPS, basdo en la Resolución 2284 de 2023.</p>
+        </header>
+
+        <h3 class="section-title">Paso 1: Configurar Datos</h3>
+        <div class="config-grid">
+            <div>
+                <label for="nit-input">NIT (sin dígito de verificación)</label>
+                <input type="text" id="nit-input" class="input-field" placeholder="Ej: 891600091">
+            </div>
+            <div>
+                <label for="codigo-input">Número de Factura</label>
+                <input type="text" id="codigo-input" class="input-field" placeholder="Ej: FVE12345">
+            </div>
+             <div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="enable-fecha-checkbox"> Habilitar Fecha (Mes)
+                </label>
+                <input type="month" id="fecha-input" class="input-field" disabled>
+            </div>
+            <div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="enable-profesional-checkbox"> Habilitar Tipo de Profesional
+                </label>
+                <select id="tipo-profesional-input" class="input-field" disabled>
+                    <option value="">Ninguno</option>
+                    <option value="MED">MED (Médico)</option>
+                    <option value="ENF">ENF (Enfermera)</option>
+                    <option value="PED">PED (Pediatría)</option>
+                </select>
+            </div>
+            <div>
+                <label for="prefix-select">Tipo de Soporte</label>
+                <select id="prefix-select" class="input-field">
+                    <option value="HEV" title="Resumen de atención u hoja de evolución">HEV</option>
+                    <option value="EPI" title="Epicrisis">EPI</option>
+                    <option value="PDX" title="Resultado de los procedimientos de apoyo diagnóstico">PDX</option>
+                    <option value="DQX" title="Descripción quirúrgica">DQX</option>
+                    <option value="RAN" title="Registro de anestesia">RAN</option>
+                    <option value="CRC" title="Comprobante de recibido del usuario">CRC</option>
+                    <option value="TAP" title="Traslado asistencial Pacientes">TAP</option>
+                    <option value="TNA" title="Transporte no asistencial ambulatorio de la persona">TNA</option>
+                    <option value="FAT" title="Factura de venta por el cobro a la aseguradora SOAT o la ADRES">FAT</option>
+                    <option value="FMO" title="Factura de venta del material de osteosíntesis">FMO</option>
+                    <option value="OPF" title="Orden o prescripción facultativa">OPF</option>
+                    <option value="LDP" title="Lista de precios">LDP</option>
+                    <option value="HAU" title="Hoja atención de urgencia">HAU</option>
+                    <option value="HAO" title="Hoja atención odontológica">HAO</option>
+                    <option value="HAM" title="Hoja de administración de medicamentos">HAM</option>
+                    <option value="PDE" title="Evidencia del envío del trámite respectivo">PDE</option>
+                </select>
+                <p id="prefix-description" class="prefix-description"></p>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3 class="section-title">Paso 2: Procesar Archivos</h3>
+        
+        <div id="drop-zone">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+            <span id="drop-zone-text">Arrastra y suelta una carpeta aquí</span>
+        </div>
+        
+        <button id="select-folder-btn" class="button button-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            o Selecciona la Carpeta
+        </button>
+        
+        <div class="button-group">
+            <button id="rename-btn" class="button button-secondary" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                Renombrar Archivos
+            </button>
+            <button id="revert-btn" class="button button-danger" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                Revertir Nombres
+            </button>
+        </div>
+        
+        <div id="log-container"></div>
+
+        <footer>
+            Creado por Kevin Hurtado - V2.1 Modern
+        </footer>
+    </div>
+
+    <script>
+        const selectFolderBtn = document.getElementById('select-folder-btn');
+        const renameBtn = document.getElementById('rename-btn');
+        const revertBtn = document.getElementById('revert-btn');
+        const prefixSelect = document.getElementById('prefix-select');
+        const nitInput = document.getElementById('nit-input');
+        const codigoInput = document.getElementById('codigo-input');
+        const fechaInput = document.getElementById('fecha-input');
+        const tipoProfesionalInput = document.getElementById('tipo-profesional-input');
+        const logContainer = document.getElementById('log-container');
+        const prefixDescription = document.getElementById('prefix-description');
+        const dropZone = document.getElementById('drop-zone');
+        const dropZoneText = document.getElementById('drop-zone-text');
+        const enableFechaCheckbox = document.getElementById('enable-fecha-checkbox');
+        const enableProfesionalCheckbox = document.getElementById('enable-profesional-checkbox');
+
+        let directoryHandle = null;
+
+        const ICONS = {
+            success: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+            error: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
+            info: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDescription();
+            const savedNIT = localStorage.getItem('savedRipsNIT');
+            if (savedNIT) {
+                nitInput.value = savedNIT;
+                logMessage('NIT cargado desde la sesión anterior.', 'info');
+            } else {
+                logMessage('Esperando acciones...', 'info');
+            }
+        });
+
+        nitInput.addEventListener('input', () => localStorage.setItem('savedRipsNIT', nitInput.value));
+        prefixSelect.addEventListener('change', updateDescription);
+
+        enableFechaCheckbox.addEventListener('change', function() {
+            fechaInput.disabled = !this.checked;
+            if (!this.checked) fechaInput.value = '';
+        });
+
+        enableProfesionalCheckbox.addEventListener('change', function() {
+            tipoProfesionalInput.disabled = !this.checked;
+            if (!this.checked) tipoProfesionalInput.value = '';
+        });
+
+        function updateDescription() {
+            const selectedOption = prefixSelect.options[prefixSelect.selectedIndex];
+            prefixDescription.textContent = selectedOption.title || 'Selecciona un tipo de soporte.';
+        }
+
+        function logMessage(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.classList.add('log-entry', `log-${type}`);
+            entry.innerHTML = `${ICONS[type]} <span>[${new Date().toLocaleTimeString()}] ${message}</span>`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        async function handleDirectorySelection(handle) {
+            try {
+                directoryHandle = handle;
+                const permissionStatus = await directoryHandle.requestPermission({ mode: 'readwrite' });
+                if (permissionStatus === 'granted') {
+                    dropZoneText.textContent = `Carpeta: "${directoryHandle.name}"`;
+                    dropZone.classList.add('drop-zone-success');
+                    renameBtn.disabled = false;
+                    revertBtn.disabled = false;
+                    logMessage(`Permiso concedido para la carpeta: ${directoryHandle.name}`, 'success');
+                } else { throw new Error('Permiso de acceso a la carpeta denegado.'); }
+            } catch (error) {
+                directoryHandle = null;
+                renameBtn.disabled = true;
+                revertBtn.disabled = true;
+                dropZoneText.textContent = 'Error al procesar la carpeta.';
+                dropZone.classList.remove('drop-zone-success');
+                logMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        selectFolderBtn.addEventListener('click', async () => {
+            try {
+                if (typeof window.showDirectoryPicker !== 'function') throw new Error('Tu navegador no soporta la selección de carpetas.');
+                await handleDirectorySelection(await window.showDirectoryPicker());
+            } catch (error) { if (error.name !== 'AbortError') logMessage(`Error al seleccionar: ${error.message}`, 'error'); }
+        });
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', (e) => e.currentTarget.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            try {
+                const handle = await e.dataTransfer.items[0].getAsFileSystemHandle();
+                if (handle.kind === 'directory') await handleDirectorySelection(handle);
+                else logMessage('Error: Por favor, arrastra solo una carpeta.', 'error');
+            } catch(error) {
+                logMessage('Error al procesar el arrastre: ' + error.message, 'error');
+            }
+        });
+
+        async function processFiles(action) {
+            if (!directoryHandle) return logMessage('Error: Debes seleccionar una carpeta.', 'error');
+
+            const tipoSoporte = prefixSelect.value;
+            const nit = nitInput.value;
+            const codigo = codigoInput.value;
+
+            if (!tipoSoporte || !nit || !codigo) return logMessage('Error: NIT, No. Factura y Tipo de Soporte son obligatorios.', 'error');
+
+            renameBtn.disabled = true; revertBtn.disabled = true;
+            logMessage(`Iniciando ${action.toUpperCase()}...`, 'info');
+            let filesProcessed = 0;
+            const prefixToMatch = `${tipoSoporte}_${nit}_${codigo}_`;
+
+            try {
+                for await (const entry of directoryHandle.values()) {
+                    if (entry.kind !== 'file') continue;
+
+                    let success = false;
+                    if (action === 'rename' && entry.name.toLowerCase().endsWith('.pdf')) {
+                        success = await renameFile(entry, prefixToMatch);
+                    } else if (action === 'revert' && entry.name.startsWith(prefixToMatch)) {
+                        success = await revertFile(entry, prefixToMatch);
+                    }
+                    if (success) filesProcessed++;
+                }
+            } catch (error) { logMessage(`Error general: ${error.message}`, 'error'); } 
+            finally {
+                const actionText = action === 'rename' ? 'renombraron' : 'restauraron';
+                logMessage(`Proceso finalizado. Se ${actionText} ${filesProcessed} archivos.`, 'info');
+                if (directoryHandle) logMessage(`<b>¡Listo! Revisa la carpeta "${directoryHandle.name}".</b>`, 'success');
+                renameBtn.disabled = false; revertBtn.disabled = false;
+            }
+        }
+        
+        async function renameFile(entry, newNamePrefix) {
+            const dotIndex = entry.name.lastIndexOf('.');
+            const baseName = entry.name.substring(0, dotIndex);
+            const extension = entry.name.substring(dotIndex);
+
+            const mesSuffix = enableFechaCheckbox.checked && fechaInput.value ? `_${fechaInput.value.split('-')[1]}` : '';
+            const profesionalSuffix = enableProfesionalCheckbox.checked && tipoProfesionalInput.value ? `_${tipoProfesionalInput.value}` : '';
+            
+            const newName = `${newNamePrefix}${baseName}${mesSuffix}${profesionalSuffix}${extension}`;
+            
+            return await moveFile(entry, newName);
+        }
+        
+        async function revertFile(entry, prefixToMatch) {
+            const dotIndex = entry.name.lastIndexOf('.');
+            let nameWithoutExt = entry.name.substring(0, dotIndex);
+            const extension = entry.name.substring(dotIndex);
+
+            if (enableProfesionalCheckbox.checked && tipoProfesionalInput.value) {
+                const profesionalSuffix = `_${tipoProfesionalInput.value}`;
+                if (nameWithoutExt.endsWith(profesionalSuffix)) nameWithoutExt = nameWithoutExt.slice(0, -profesionalSuffix.length);
+            }
+            if (enableFechaCheckbox.checked && fechaInput.value) {
+                const mesSuffix = `_${fechaInput.value.split('-')[1]}`;
+                if (nameWithoutExt.endsWith(mesSuffix)) nameWithoutExt = nameWithoutExt.slice(0, -mesSuffix.length);
+            }
+
+            let originalBaseName = nameWithoutExt.substring(prefixToMatch.length);
+            if (!originalBaseName) {
+                logMessage(`No se pudo extraer el nombre original de '${entry.name}'. Saltando.`, 'error');
+                return false;
+            }
+            const newName = originalBaseName.includes('.') ? originalBaseName : originalBaseName + extension;
+
+            return await moveFile(entry, newName);
+        }
+
+        async function moveFile(entry, newName) {
+            try {
+                const file = await entry.getFile();
+                const newFileHandle = await directoryHandle.getFileHandle(newName, { create: true });
+                const writable = await newFileHandle.createWritable();
+                await writable.write(file);
+                await writable.close();
+                await directoryHandle.removeEntry(entry.name);
+                
+                logMessage(`'${entry.name}' -> '${newName}'`, 'success');
+                return true;
+            } catch (fileError) {
+                logMessage(`Error procesando '${entry.name}': ${fileError.message}`, 'error');
+                return false;
+            }
+        }
+
+        renameBtn.addEventListener('click', () => processFiles('rename'));
+        revertBtn.addEventListener('click', () => processFiles('revert'));
+
+    </script>
+
+</body>
+</html>
