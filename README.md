@@ -1,83 +1,53 @@
 # Renombrador de Soportes RIPS (Resolución 2284 de 2023)
 
-Herramienta web local para renombrar masivamente archivos PDF de soportes clínicos y administrativos, siguiendo una estructura estandarizada inspirada en la **Resolución 2284 de 2023** del Ministerio de Salud de Colombia.
+Este es el repositorio del **Renombrador de Soportes RIPS**, una herramienta web moderna y fácil de usar diseñada para ayudar a las entidades de salud a organizar sus archivos de soportes RIPS (Registros Individuales de Prestación de Servicios de Salud) de acuerdo con la nomenclatura exigida por la **Resolución 2284 de 2023** en Colombia.
 
-Esta aplicación se ejecuta completamente en el navegador del usuario, garantizando que los archivos nunca salgan de su equipo, lo que asegura total privacidad y seguridad.
+La aplicación permite renombrar archivos PDF en lote y también revertir el proceso, todo directamente en el navegador y sin necesidad de instalar software adicional, garantizando la privacidad de los datos.
 
-## Motivación
+## 🚀 Características Principales
 
-La gestión y envío de los Registros Individuales de Prestación de Servicios de Salud (RIPS) en Colombia requiere que los soportes documentales (facturas, epicrisis, resultados de laboratorio, etc.) estén correctamente identificados. Una nomenclatura de archivos consistente y estandarizada es crucial para:
+* **Renombrado en Lote**: Procesa carpetas completas de archivos PDF para aplicar la nueva nomenclatura de forma automática.
+* **Reversión de Nombres**: Si cometiste un error o necesitas los nombres originales, puedes revertir los cambios con un solo clic.
+* **Estructura Personalizable**: Permite configurar fácilmente los componentes del nombre del archivo:
+    * NIT del prestador.
+    * Número de la factura.
+    * Tipo de soporte (HEV, EPI, PDX, etc.).
+    * Campos opcionales para mes y tipo de profesional.
+* **Interfaz Moderna e Intuitiva**: Diseñada con un estilo limpio y amigable, con funciones de arrastrar y soltar (Drag & Drop) para una mejor experiencia de usuario.
+* **Seguridad y Privacidad**: Todo el procesamiento de archivos se realiza localmente en tu navegador. Ningún archivo o dato es subido a un servidor.
+* **Carga de Sesión**: La herramienta guarda el último NIT utilizado en el almacenamiento local del navegador para agilizar futuros usos.
 
-* Facilitar la auditoría y la trazabilidad.
-* Cumplir con las normativas vigentes.
-* Evitar errores y glosas durante el proceso de facturación a las entidades responsables de pago.
+## 🛠️ Cómo Utilizar
 
-Esta herramienta fue creada para automatizar el tedioso proceso de renombrar cientos de archivos manualmente, reduciendo el riesgo de error humano y ahorrando una cantidad significativa de tiempo.
+Usar la herramienta es muy sencillo. Solo sigue estos pasos:
 
-## Características Principales
+1.  **Abre el archivo `index.html`** en un navegador web moderno como Google Chrome, Firefox o Microsoft Edge.
+2.  **Configura los Datos (Paso 1)**:
+    * Ingresa el **NIT** de tu institución (sin el dígito de verificación).
+    * Escribe el **Número de Factura** asociado a los soportes.
+    * Selecciona el **Tipo de Soporte** que vas a procesar (por ejemplo, `HEV` para Hojas de Evolución). La descripción de cada sigla aparecerá debajo del selector.
+    * (Opcional) Habilita y selecciona la **Fecha (Mes)** o el **Tipo de Profesional** si necesitas añadir esos sufijos al nombre del archivo.
+3.  **Selecciona la Carpeta (Paso 2)**:
+    * Puedes arrastrar y soltar la carpeta que contiene los archivos PDF directamente sobre el área punteada.
+    * O bien, haz clic en el botón **"Selecciona la Carpeta"** para abrir el explorador de archivos y elegirla manualmente.
+4.  **Procesa los Archivos**:
+    * Una vez seleccionada la carpeta y concedidos los permisos, los botones de acción se activarán.
+    * Haz clic en **"Renombrar Archivos"** para aplicar la nueva nomenclatura.
+    * Haz clic en **"Revertir Nombres"** para restaurar los nombres originales (la herramienta debe estar configurada con los mismos datos con los que se renombraron).
+5.  **Verifica los Resultados**:
+    * La consola en la parte inferior de la página te mostrará un registro detallado de cada archivo procesado.
+    * Al finalizar, revisa la carpeta en tu computador para confirmar que los nombres se han actualizado correctamente.
 
-* **Interfaz Moderna y Amigable**: Un diseño limpio e intuitivo que guía al usuario a través del proceso.
-* **Configuración Dinámica**: Permite al usuario ingresar el NIT y el Código de Habilitación de la entidad prestadora.
-* **Nomenclatura Flexible**: Incluye campos opcionales para la **fecha** del soporte y un **consecutivo** numérico, adaptándose a diversas necesidades.
-* **Tipos de Soporte Predefinidos**: Un menú desplegable con los prefijos estandarizados para los soportes más comunes (HEV, EPI, FAT, etc.).
-* **Descripciones Claras**: Al seleccionar un tipo de soporte, se muestra su nombre completo para evitar confusiones.
-* **Seguridad y Privacidad**: Funciona 100% en el lado del cliente. **Ningún archivo se sube a internet**.
-* **Procesamiento por Lotes**: Renombra cientos de archivos PDF en una carpeta con un solo clic.
-* **Registro de Actividad**: Un panel de registro muestra en tiempo real qué archivos se están procesando, cuáles se completaron y si ocurrió algún error.
+## 💻 Detalles Técnicos
 
-## Estructura del Nombre de Archivo
+* **Frontend**: La aplicación está construida puramente con **HTML5, CSS3 y JavaScript (Vanilla JS)**. No utiliza frameworks externos, lo que la hace ligera y rápida.
+* **API del Sistema de Archivos**: Se utiliza la API moderna `File System Access API` (`window.showDirectoryPicker`) para interactuar de forma segura con el sistema de archivos local del usuario, permitiendo la lectura y modificación de archivos dentro de una carpeta seleccionada.
+* **Diseño Responsivo**: La interfaz se adapta a diferentes tamaños de pantalla, aunque está optimizada para su uso en escritorio.
 
-La herramienta construye el nuevo nombre de los archivos siguiendo esta estructura personalizable:
+## 📄 Licencia
 
-`[Prefijo]_[NIT]_[Cód. Habilitación]_[Fecha]_[Consecutivo]_[Nombre Original].pdf`
+Este proyecto es de código abierto. Eres libre de usarlo, modificarlo y distribuirlo según tus necesidades.
 
-* **`[Prefijo]`**: El tipo de soporte seleccionado (ej. `FAT`).
-* **`[NIT]`**: El NIT de la institución (ej. `891600091`).
-* **`[Cód. Habilitación]`**: El código del servicio o sede (ej. `IPS8888`).
-* **`[Fecha]`** (Opcional): La fecha seleccionada en formato `AAAAMMDD`.
-* **`[Consecutivo]`** (Opcional): Un número que se formatea con ceros a la izquierda (ej. `001`).
-* **`[Nombre Original].pdf`**: El nombre que el archivo tenía originalmente.
+## ✍️ Autor
 
-**Ejemplo de resultado:**
-`FAT_891600091_IPS8888_20250814_001_factura-original-123.pdf`
-
-## Cómo Usar
-
-Para que la herramienta funcione correctamente, debe ejecutarse en un "entorno seguro", como lo exigen los navegadores modernos. La forma más sencilla de lograrlo es a través de un servidor local.
-
-#### Paso 1: Iniciar un Servidor Local (Método recomendado con Python)
-
-1.  Asegúrate de tener Python instalado en tu sistema.
-2.  Abre una terminal o símbolo del sistema (`cmd` en Windows, `Terminal` en macOS/Linux).
-3.  Navega hasta la carpeta donde guardaste el archivo `.html` usando el comando `cd`.
-    ```bash
-    cd ruta/a/tu/carpeta
-    ```
-4.  Ejecuta el siguiente comando para iniciar el servidor:
-    ```bash
-    python -m http.server
-    ```
-5.  Abre tu navegador web (Chrome, Edge, Firefox) y ve a la dirección `http://localhost:8000`.
-6.  Haz clic en el nombre del archivo `.html` para abrir la herramienta.
-
-#### Paso 2: Utilizar la Herramienta
-
-1.  **Completa los campos**: Ingresa el NIT, Código de Habilitación y, si lo deseas, la fecha y un consecutivo.
-2.  **Selecciona el Tipo de Soporte**: Elige el prefijo adecuado de la lista desplegable.
-3.  **Selecciona la Carpeta**: Haz clic en el botón "Seleccionar Carpeta" y elige el directorio que contiene los archivos PDF que deseas renombrar.
-4.  **Inicia el Proceso**: Presiona el botón "Renombrar Archivos PDF".
-5.  **Verifica los Resultados**: El panel de registro te informará del progreso. Al finalizar, te mostrará un mensaje de éxito, indicando que ya puedes revisar tu carpeta en el explorador de archivos.
-
-## Nota Técnica Importante
-
-Esta aplicación utiliza la **File System Access API**, una tecnología web moderna que permite a las páginas web solicitar acceso para leer y escribir en archivos y carpetas locales. Por razones de seguridad, los navegadores solo permiten el uso de esta API en contextos seguros (`https` o `localhost`), razón por la cual es necesario el paso del servidor local.
-
-## Tecnologías Utilizadas
-
-* **HTML5**: Para la estructura de la página.
-* **CSS3**: Para el diseño moderno y responsivo.
-* **JavaScript (ES6+)**: Para toda la lógica funcional, incluyendo la manipulación de archivos a través de la File System Access API.
-
-## Autor
-
-**Creado por Kevin Hurtado (Versión de prueba)**
+* **Kevin Hurtado**
