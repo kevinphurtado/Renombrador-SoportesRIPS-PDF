@@ -3,539 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Renombrador y Reversor de Soportes RIPS</title>
-    <style>
-        :root {
-            --bg-color: #f4f7fa;
-            --container-bg: #ffffff;
-            --primary-blue: #0d6efd;
-            --primary-blue-hover: #0b5ed7;
-            --primary-green: #198754;
-            --primary-green-hover: #157347;
-            --primary-red: #dc3545;
-            --primary-red-hover: #bb2d3b;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --border-color: #dee2e6;
-            --shadow: 0px 8px 24px rgba(0, 0, 0, 0.05);
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        .container {
-            background-color: var(--container-bg);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 800px;
-            border: 1px solid var(--border-color);
-        }
-
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 32px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-        .header p { color: var(--text-secondary); margin-bottom: 0; font-size: 16px; max-width: 600px; margin-left: auto; margin-right: auto; }
-        
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .config-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            text-align: left;
-            margin-bottom: 25px;
-        }
-
-        label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 14px; }
-        .checkbox-label { display: flex; align-items: center; font-weight: 500; margin-bottom: 8px; cursor: pointer; }
-        .checkbox-label input { margin-right: 10px; width: 16px; height: 16px; }
-
-        .input-field, select {
-            padding: 12px 16px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            box-sizing: border-box;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            background-color: #fff;
-        }
-
-        .input-field:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
-        }
-        
-        input:disabled, select:disabled { background-color: #f8f9fa; cursor: not-allowed; color: var(--text-secondary); }
-
-        .prefix-description {
-            font-size: 14px; color: var(--text-secondary); background-color: #f8f9fa;
-            border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;
-            margin-top: 10px; text-align: left; min-height: 20px;
-        }
-
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 20px; font-size: 16px; font-weight: 600; border: none;
-            border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out;
-            width: 100%; box-sizing: border-box;
-        }
-        .button:active { transform: scale(0.97); }
-        .button-primary { background-color: var(--primary-blue); color: white; }
-        .button-primary:hover { background-color: var(--primary-blue-hover); box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2); }
-        .button-secondary { background-color: var(--primary-green); color: white; }
-        .button-secondary:hover { background-color: var(--primary-green-hover); box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2); }
-        .button-danger { background-color: var(--primary-red); color: white; }
-        .button-danger:hover { background-color: var(--primary-red-hover); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2); }
-        .button:disabled { background-color: #e9ecef; color: #adb5bd; cursor: not-allowed; box-shadow: none; }
-        .button svg { width: 20px; height: 20px; }
-
-        #log-container {
-            margin-top: 25px; padding: 8px; background-color: #f8f9fa; border-radius: 8px;
-            text-align: left; height: 250px; overflow-y: auto; font-family: 'SF Mono', 'Courier New', monospace;
-            font-size: 13px; border: 1px solid var(--border-color);
-        }
-        
-        .log-entry { 
-            display: flex; align-items: center; gap: 8px;
-            padding: 8px 12px; border-bottom: 1px solid #e9ecef; 
-        }
-        .log-entry:last-child { border-bottom: none; }
-        .log-icon { width: 16px; height: 16px; flex-shrink: 0; }
-        .log-success { color: #146c43; }
-        .log-error { color: #b02a37; }
-        .log-info { color: #3b4a5d; }
-
-        #drop-zone {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-            font-weight: 600; color: var(--text-secondary); margin: 20px 0; padding: 40px 20px;
-            border-radius: 12px; background-color: #f8f9fa; border: 2px dashed var(--border-color);
-            transition: all 0.3s ease; cursor: pointer; text-align: center;
-        }
-        #drop-zone.drag-over { border-color: var(--primary-blue); background-color: #e9f2ff; color: var(--primary-blue); }
-        #drop-zone svg { width: 48px; height: 48px; transition: transform 0.3s ease; }
-        #drop-zone.drag-over svg { transform: scale(1.1); }
-        .drop-zone-success { border-color: var(--primary-green) !important; color: var(--primary-green) !important; background-color: #e8f3ee !important; }
-
-        hr { border: none; border-top: 1px solid #e9ecef; margin: 40px 0; }
-        footer { margin-top: 30px; font-size: 13px; color: #97a0af; text-align: center; }
-        footer a { color: var(--primary-blue); text-decoration: none; font-weight: 600; }
-        footer a:hover { text-decoration: underline; }
-
-        /* Estilos de la Ventana Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Oculta por defecto */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background-color: var(--container-bg);
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-            text-align: left;
-            animation: slide-down 0.3s ease-out;
-        }
-
-        @keyframes slide-down {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-content h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 22px;
-            color: var(--text-primary);
-        }
-
-        .modal-content p {
-            font-size: 16px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .modal-close:hover {
-            color: var(--text-primary);
-        }
-    </style>
+    <title>Herramienta de Renombrado de Archivos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="container">
-        <header class="header">
-            <h1>Renombrador de Soportes</h1>
-            <p>Configura los datos para organizar tus archivos PDF según la estructura RIPS, basdo en la Resolución 2284 de 2023.</p>
+    <div class="container" id="app">
+        <header>
+            <div class="header-title">
+                <h1>Renombrador de Soportes RIPS</h1>
+                <p class="lead" id="main-subtitle">Configura los datos y revisa una vista previa antes de aplicar los cambios.</p>
+            </div>
+            <div class="controls">
+                <div class="toggle-switch" role="tablist" aria-label="Seleccionar herramienta">
+                    <button id="toggle-rips" class="active" role="tab" aria-selected="true">
+                        <i class="fas fa-file-medical"></i> RIPS
+                    </button>
+                    <button id="toggle-remover" role="tab" aria-selected="false">
+                        <i class="fas fa-exchange-alt"></i> Modificar
+                    </button>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="help-toggle" class="help-toggle" aria-label="Mostrar ayuda">
+                    <i class="fas fa-question"></i>
+                </button>
+            </div>
         </header>
 
-        <h3 class="section-title">Paso 1: Configurar Datos</h3>
-        <div class="config-grid">
-            <div>
-                <label for="nit-input">NIT (sin dígito de verificación)</label>
-                <input type="text" id="nit-input" class="input-field" placeholder="Ej: 891600091">
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-cog"></i>
+                <span id="config-title">Paso 1: Configurar Datos</span>
             </div>
-            <div>
-                <label for="codigo-input">Número de Factura</label>
-                <input type="text" id="codigo-input" class="input-field" placeholder="Ej: IPS12345">
+            
+            <div id="tool-rips">
+                <div class="grid" role="form">
+                    <div>
+                        <label for="nit-input"><i class="fas fa-id-card"></i> NIT (sin dígito de verificación)</label>
+                        <input id="nit-input" class="input" type="text" inputmode="numeric" placeholder="Ej: 891600091" />
+                        <div class="description">Solo números. Se guarda automáticamente.</div>
+                    </div>
+                    <div>
+                        <label for="codigo-input"><i class="fas fa-barcode"></i> Número de Factura</label>
+                        <input id="codigo-input" class="input" type="text" placeholder="Ej: IPS12345" />
+                    </div>
+                    <div>
+                        <label for="prefix-select"><i class="fas fa-tag"></i> Tipo de Soporte</label>
+                        <select id="prefix-select" class="input"></select>
+                        <p id="prefix-desc" class="description">Selecciona un tipo de soporte.</p>
+                    </div>
+                </div>
             </div>
-             <div>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="enable-fecha-checkbox"> Habilitar Fecha (Mes)
-                </label>
-                <input type="month" id="fecha-input" class="input-field" disabled>
-            </div>
-            <div>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="enable-profesional-checkbox"> Habilitar Tipo de Profesional
-                </label>
-                <select id="tipo-profesional-input" class="input-field" disabled>
-                    <option value="">Ninguno</option>
-                    <option value="MED">MED (Médico)</option>
-                    <option value="ENF">ENF (Enfermera)</option>
-                    <option value="PED">PED (Pediatría)</option>
-                </select>
-            </div>
-            <div>
-                <label for="prefix-select">Tipo de Soporte</label>
-                <select id="prefix-select" class="input-field">
-                    <option value="HEV" title="Resumen de atención u hoja de evolución">HEV</option>
-                    <option value="EPI" title="Epicrisis">EPI</option>
-                    <option value="PDX" title="Resultado de los procedimientos de apoyo diagnóstico">PDX</option>
-                    <option value="DQX" title="Descripción quirúrgica">DQX</option>
-                    <option value="RAN" title="Registro de anestesia">RAN</option>
-                    <option value="CRC" title="Comprobante de recibido del usuario">CRC</option>
-                    <option value="TAP" title="Traslado asistencial Pacientes">TAP</option>
-                    <option value="TNA" title="Transporte no asistencial ambulatorio de la persona">TNA</option>
-                    <option value="FAT" title="Factura de venta por el cobro a la aseguradora SOAT o la ADRES">FAT</option>
-                    <option value="FMO" title="Factura de venta del material de osteosíntesis">FMO</option>
-                    <option value="OPF" title="Orden o prescripción facultativa">OPF</option>
-                    <option value="LDP" title="Lista de precios">LDP</option>
-                    <option value="HAU" title="Hoja atención de urgencia">HAU</option>
-                    <option value="HAO" title="Hoja atención odontológica">HAO</option>
-                    <option value="HAM" title="Hoja de administración de medicamentos">HAM</option>
-                    <option value="OTR" title="Autorización, documento y factura">OTR</option>
-                    <option value="PDE" title="Evidencia del envío del trámite respectivo">PDE</option>
-                </select>
-                <p id="prefix-description" class="prefix-description"></p>
+
+            <div id="tool-remover" class="hidden">
+                 <div class="grid" role="form">
+                    <div>
+                        <label class="checkbox-inline"><input id="enable-doctype-checkbox" type="checkbox" /> Tipo de Documento</label>
+                        <select id="tipo-documento-input" class="input" disabled></select>
+                    </div>
+                    <div>
+                        <label class="checkbox-inline"><input id="enable-ext-quitar-checkbox" type="checkbox" /> Extensión a quitar</label>
+                        <select id="extQuitar" class="input" disabled></select>
+                    </div>
+                    <div>
+                        <label class="checkbox-inline"><input id="enable-fecha-checkbox" type="checkbox" /> Fecha (Mes) a Poner</label>
+                        <input id="fecha-input" class="input" type="month" disabled />
+                    </div>
+                    <div>
+                        <label class="checkbox-inline"><input id="enable-profesional-checkbox" type="checkbox" /> Tipo de Profesional</label>
+                        <select id="tipo-profesional-input" class="input" disabled></select>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <hr>
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-folder-open"></i>
+                <span>Paso 2: Seleccionar Archivos o Carpeta</span>
+            </div>
 
-        <h3 class="section-title">Paso 2: Procesar Archivos</h3>
-        
-        <div id="drop-zone">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
-            <span id="drop-zone-text">Arrastra y suelta una carpeta aquí</span>
+            <div id="drop-zone" class="drop-area" role="region" aria-label="Área de selección">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <div class="drop-title">Arrastra y suelta una carpeta aquí</div>
+                <div class="drop-subtitle">o haz clic para seleccionar una carpeta</div>
+                <input id="folder-input" type="file" webkitdirectory directory multiple class="file-input" />
+            </div>
+
+            <div class="action-buttons">
+                <button id="select-btn" class="btn btn-primary"><i class="fas fa-folder"></i> Seleccionar carpeta</button>
+                <button id="preview-btn" class="btn" disabled><i class="fas fa-search"></i> Vista previa</button>
+                <button id="confirm-rename-btn" class="btn btn-secondary" disabled><i class="fas fa-rocket"></i> Renombrar</button>
+                <button id="revert-btn" class="btn btn-danger" disabled><i class="fas fa-undo"></i> Revertir Último Lote</button>
+                <button id="clear-btn" class="btn btn-light" disabled><i class="fas fa-times-circle"></i> Limpiar Selección</button>
+            </div>
+
+            <div class="stats">
+                <div><span class="badge" id="stat-count">0 archivos</span> seleccionados</div>
+                <div class="status" id="stat-status">Estado: esperando</div>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress"><div class="progress-bar" role="progressbar"></div></div>
+            </div>
         </div>
-        
-        <button id="select-folder-btn" class="button button-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            o Selecciona la Carpeta
-        </button>
-        
-        <div class="button-group">
-            <button id="rename-btn" class="button button-secondary" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
-                Renombrar Archivos
-            </button>
-            <button id="revert-btn" class="button button-danger" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                Revertir Nombres
-            </button>
+
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-info-circle"></i>
+                <span>Registro de Actividad</span>
+            </div>
+            <div id="log-container" class="log-container" aria-live="polite"></div>
         </div>
-        
-        <div id="log-container"></div>
 
         <footer>
-            © 2025 Desarrollado por el equipo de <a href="https://chococreativo.com.co/proyectos" target="_blank">Chocó Creativo 🖤</a> - V2.1 <a href="#" id="open-changelog">Ver lo nuevo.</a>
-        </footer>
+            © 2025 Desarrollado por <a href="https://chococreativo.com.co/proyectos" target="_blank" rel="noopener">Chocó Creativo 🖤</a> - 
+            <a href="#" id="version-link">Versión 3.3</a>
+          </footer>
     </div>
 
-    <div id="changelog-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2>Novedades de la Versión 2.1</h2>
-            <p>
-                Se agregó: <strong>"Revertir Nombres"</strong> para restaurar los nombres originales (la herramienta debe estar configurada con los mismos datos con los que se renombraron).
-	     <p>
-		Se agregó: <strong>Carga de Sesión</strong> ahora se guarda el último NIT utilizado en el almacenamiento local del navegador para agilizar futuros usos.
-		</p>
-            </p>
+    <div id="preview-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-list-alt"></i> Vista Previa de Cambios</h3>
+                <button class="close-btn" data-modal-close="preview-modal">×</button>
+            </div>
+            <div class="modal-content">
+                <p>Se van a modificar <strong id="preview-count">0</strong> archivos. Revisa los cambios antes de continuar.</p>
+                <div class="file-list" id="preview-list"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" data-modal-close="preview-modal">Cerrar</button>
+                <button id="apply-from-preview-btn" class="btn btn-secondary"><i class="fas fa-check"></i> Aplicar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-rocket"></i> Confirmar Cambios</h3>
+                <button class="close-btn" data-modal-close="confirm-modal">×</button>
+            </div>
+            <div class="modal-content">
+                <p>Se van a renombrar <strong id="confirm-count">0</strong> archivos. Esta acción modificará los archivos en tu disco.</p>
+                <div class="file-list" id="confirm-list"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" data-modal-close="confirm-modal">Cancelar</button>
+                <button id="apply-confirm" class="btn btn-secondary">Aplicar cambios</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        const selectFolderBtn = document.getElementById('select-folder-btn');
-        const renameBtn = document.getElementById('rename-btn');
-        const revertBtn = document.getElementById('revert-btn');
-        const prefixSelect = document.getElementById('prefix-select');
-        const nitInput = document.getElementById('nit-input');
-        const codigoInput = document.getElementById('codigo-input');
-        const fechaInput = document.getElementById('fecha-input');
-        const tipoProfesionalInput = document.getElementById('tipo-profesional-input');
-        const logContainer = document.getElementById('log-container');
-        const prefixDescription = document.getElementById('prefix-description');
-        const dropZone = document.getElementById('drop-zone');
-        const dropZoneText = document.getElementById('drop-zone-text');
-        const enableFechaCheckbox = document.getElementById('enable-fecha-checkbox');
-        const enableProfesionalCheckbox = document.getElementById('enable-profesional-checkbox');
+    <div id="success-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="success-animation">
+                <div class="checkmark">✓</div>
+                <div>
+                    <h3 class="modal-title" id="success-title">Proceso completado</h3>
+                    <p id="success-msg">Se renombraron X archivos correctamente.</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" data-modal-close="success-modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
-        let directoryHandle = null;
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-life-ring"></i> Ayuda y Soporte</h3>
+                <button class="close-btn" data-modal-close="help-modal">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="tutorial-tabs">
+                    <div class="tutorial-tab active" data-tab="tutorial">
+                        <i class="fas fa-graduation-cap"></i> ¿Cómo funciona?
+                    </div>
+                    <div class="tutorial-tab" data-tab="support">
+                        <i class="fas fa-paper-plane"></i> Soporte y Sugerencias
+                    </div>
+                </div>
+                <div class="tutorial-content active" id="tutorial-content">
+                    </div>
+                <div class="tutorial-content" id="support-content">
+                    <h4>¿Encontraste un error o tienes una idea?</h4>
+                    <p>Tu opinión es muy valiosa para mejorar esta herramienta. Si encuentras un comportamiento inesperado o tienes una sugerencia para una nueva función, no dudes en comunicárnoslo.</p>
+                    <p>La mejor manera de hacerlo es enviando un correo electrónico. Hemos preparado un enlace que pre-rellena la información necesaria para que nos sea más fácil ayudarte.</p>
+                    <br>
+                    <a href="mailto:agente.chococreativo@gmail.com?subject=Sugerencia/Error en Renombrador RIPS v3.3&body=Hola, tengo una sugerencia/reporte de error:%0A%0A**Describe tu idea o el problema:**%0A%0A**Pasos para reproducir el error (si aplica):**%0A1. ...%0A2. ...%0A%0A¡Gracias!" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Enviar Correo de Soporte
+                    </a>
+                    <div class="description" style="margin-top: 15px;">
+                        Esto abrirá tu cliente de correo electrónico por defecto (Gmail, Outlook, etc.) con los campos de destinatario y asunto ya completados.
+                    </div>
+                </div>
+            </div>
+             <div class="modal-actions">
+                <button class="btn btn-primary" data-modal-close="help-modal">Entendido</button>
+            </div>
+        </div>
+    </div>
 
-        const ICONS = {
-            success: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
-            error: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
-            info: `<svg class="log-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
-        };
+	<div id="version-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-star"></i> Novedades de la Versión 3.3</h3>
+                <button class="close-btn" data-modal-close="version-modal">×</button>
+            </div>
+            <div class="modal-content">
+                <p>Esta versión incluye una reestructuración completa del código para mayor estabilidad y nuevas funciones de usabilidad.</p>
+                <h4>Novedades Principales</h4>
+                <ul>
+                    <li><strong>Función de Revertir Mejorada:</strong> Ahora puedes deshacer el último lote de archivos renombrados de forma segura desde la propia aplicación.</li>
+                    <li><strong>Sección de Ayuda y Soporte:</strong> Se centralizó toda la ayuda en un nuevo modal interactivo.</li>
+                    <li><strong>Mejoras de Interfaz:</strong> La vista previa ya no es una ventana emergente y se añadió un botón para limpiar la selección de archivos.</li>
+                    <li><strong>Corrección de Errores:</strong> Se mejoró la lógica de los menús desplegables.</li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" data-modal-close="version-modal">Entendido</button>
+            </div>
+        </div>
+    </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateDescription();
-            const savedNIT = localStorage.getItem('savedRipsNIT');
-            if (savedNIT) {
-                nitInput.value = savedNIT;
-                logMessage('NIT cargado desde la sesión anterior.', 'info');
-            } else {
-                logMessage('Esperando acciones...', 'info');
-            }
-        });
-
-        nitInput.addEventListener('input', () => localStorage.setItem('savedRipsNIT', nitInput.value));
-        prefixSelect.addEventListener('change', updateDescription);
-
-        enableFechaCheckbox.addEventListener('change', function() {
-            fechaInput.disabled = !this.checked;
-            if (!this.checked) fechaInput.value = '';
-        });
-
-        enableProfesionalCheckbox.addEventListener('change', function() {
-            tipoProfesionalInput.disabled = !this.checked;
-            if (!this.checked) tipoProfesionalInput.value = '';
-        });
-
-        function updateDescription() {
-            const selectedOption = prefixSelect.options[prefixSelect.selectedIndex];
-            prefixDescription.textContent = selectedOption.title || 'Selecciona un tipo de soporte.';
-        }
-
-        function logMessage(message, type = 'info') {
-            const entry = document.createElement('div');
-            entry.classList.add('log-entry', `log-${type}`);
-            entry.innerHTML = `${ICONS[type]} <span>[${new Date().toLocaleTimeString()}] ${message}</span>`;
-            logContainer.appendChild(entry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-
-        async function handleDirectorySelection(handle) {
-            try {
-                directoryHandle = handle;
-                const permissionStatus = await directoryHandle.requestPermission({ mode: 'readwrite' });
-                if (permissionStatus === 'granted') {
-                    dropZoneText.textContent = `Carpeta: "${directoryHandle.name}"`;
-                    dropZone.classList.add('drop-zone-success');
-                    renameBtn.disabled = false;
-                    revertBtn.disabled = false;
-                    logMessage(`Permiso concedido para la carpeta: ${directoryHandle.name}`, 'success');
-                } else { throw new Error('Permiso de acceso a la carpeta denegado.'); }
-            } catch (error) {
-                directoryHandle = null;
-                renameBtn.disabled = true;
-                revertBtn.disabled = true;
-                dropZoneText.textContent = 'Error al procesar la carpeta.';
-                dropZone.classList.remove('drop-zone-success');
-                logMessage(`Error: ${error.message}`, 'error');
-            }
-        }
-
-        selectFolderBtn.addEventListener('click', async () => {
-            try {
-                if (typeof window.showDirectoryPicker !== 'function') throw new Error('Tu navegador no soporta la selección de carpetas.');
-                await handleDirectorySelection(await window.showDirectoryPicker());
-            } catch (error) { if (error.name !== 'AbortError') logMessage(`Error al seleccionar: ${error.message}`, 'error'); }
-        });
-
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); });
-        dropZone.addEventListener('dragleave', (e) => e.currentTarget.classList.remove('drag-over'));
-        dropZone.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            try {
-                const handle = await e.dataTransfer.items[0].getAsFileSystemHandle();
-                if (handle.kind === 'directory') await handleDirectorySelection(handle);
-                else logMessage('Error: Por favor, arrastra solo una carpeta.', 'error');
-            } catch(error) {
-                logMessage('Error al procesar el arrastre: ' + error.message, 'error');
-            }
-        });
-
-        async function processFiles(action) {
-            if (!directoryHandle) return logMessage('Error: Debes seleccionar una carpeta.', 'error');
-
-            const tipoSoporte = prefixSelect.value;
-            const nit = nitInput.value;
-            const codigo = codigoInput.value;
-
-            if (!tipoSoporte || !nit || !codigo) return logMessage('Error: NIT, No. Factura y Tipo de Soporte son obligatorios.', 'error');
-
-            renameBtn.disabled = true; revertBtn.disabled = true;
-            logMessage(`Iniciando ${action.toUpperCase()}...`, 'info');
-            let filesProcessed = 0;
-            const prefixToMatch = `${tipoSoporte}_${nit}_${codigo}_`;
-
-            try {
-                for await (const entry of directoryHandle.values()) {
-                    if (entry.kind !== 'file') continue;
-
-                    let success = false;
-                    if (action === 'rename' && entry.name.toLowerCase().endsWith('.pdf')) {
-                        success = await renameFile(entry, prefixToMatch);
-                    } else if (action === 'revert' && entry.name.startsWith(prefixToMatch)) {
-                        success = await revertFile(entry, prefixToMatch);
-                    }
-                    if (success) filesProcessed++;
-                }
-            } catch (error) { logMessage(`Error general: ${error.message}`, 'error'); } 
-            finally {
-                const actionText = action === 'rename' ? 'renombraron' : 'restauraron';
-                logMessage(`Proceso finalizado. Se ${actionText} ${filesProcessed} archivos.`, 'info');
-                if (directoryHandle) logMessage(`<b>¡Listo! Revisa la carpeta "${directoryHandle.name}".</b>`, 'success');
-                renameBtn.disabled = false; revertBtn.disabled = false;
-            }
-        }
-        
-        async function renameFile(entry, newNamePrefix) {
-            const dotIndex = entry.name.lastIndexOf('.');
-            const baseName = entry.name.substring(0, dotIndex);
-            const extension = entry.name.substring(dotIndex);
-
-            const mesSuffix = enableFechaCheckbox.checked && fechaInput.value ? `_${fechaInput.value.split('-')[1]}` : '';
-            const profesionalSuffix = enableProfesionalCheckbox.checked && tipoProfesionalInput.value ? `_${tipoProfesionalInput.value}` : '';
-            
-            const newName = `${newNamePrefix}${baseName}${mesSuffix}${profesionalSuffix}${extension}`;
-            
-            return await moveFile(entry, newName);
-        }
-        
-        async function revertFile(entry, prefixToMatch) {
-            const dotIndex = entry.name.lastIndexOf('.');
-            let nameWithoutExt = entry.name.substring(0, dotIndex);
-            const extension = entry.name.substring(dotIndex);
-
-            if (enableProfesionalCheckbox.checked && tipoProfesionalInput.value) {
-                const profesionalSuffix = `_${tipoProfesionalInput.value}`;
-                if (nameWithoutExt.endsWith(profesionalSuffix)) nameWithoutExt = nameWithoutExt.slice(0, -profesionalSuffix.length);
-            }
-            if (enableFechaCheckbox.checked && fechaInput.value) {
-                const mesSuffix = `_${fechaInput.value.split('-')[1]}`;
-                if (nameWithoutExt.endsWith(mesSuffix)) nameWithoutExt = nameWithoutExt.slice(0, -mesSuffix.length);
-            }
-
-            let originalBaseName = nameWithoutExt.substring(prefixToMatch.length);
-            if (!originalBaseName) {
-                logMessage(`No se pudo extraer el nombre original de '${entry.name}'. Saltando.`, 'error');
-                return false;
-            }
-            const newName = originalBaseName.includes('.') ? originalBaseName : originalBaseName + extension;
-
-            return await moveFile(entry, newName);
-        }
-
-        async function moveFile(entry, newName) {
-            try {
-                const file = await entry.getFile();
-                const newFileHandle = await directoryHandle.getFileHandle(newName, { create: true });
-                const writable = await newFileHandle.createWritable();
-                await writable.write(file);
-                await writable.close();
-                await directoryHandle.removeEntry(entry.name);
-                
-                logMessage(`'${entry.name}' -> '${newName}'`, 'success');
-                return true;
-            } catch (fileError) {
-                logMessage(`Error procesando '${entry.name}': ${fileError.message}`, 'error');
-                return false;
-            }
-        }
-
-        renameBtn.addEventListener('click', () => processFiles('rename'));
-        revertBtn.addEventListener('click', () => processFiles('revert'));
-
-        // --- Lógica de la Ventana Modal ---
-        const openChangelogLink = document.getElementById('open-changelog');
-        const changelogModal = document.getElementById('changelog-modal');
-        const closeModalBtn = changelogModal.querySelector('.modal-close');
-
-        function showModal() {
-            changelogModal.style.display = 'flex';
-        }
-
-        function hideModal() {
-            changelogModal.style.display = 'none';
-        }
-
-        openChangelogLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Previene que la página salte al inicio
-            showModal();
-        });
-
-        closeModalBtn.addEventListener('click', hideModal);
-
-        // Cierra la modal si se hace clic fuera del contenido
-        changelogModal.addEventListener('click', (e) => {
-            if (e.target === changelogModal) {
-                hideModal();
-            }
-        });
-
-    </script>
+    <script type="module" src="js/main.js"></script>
 
 </body>
-
 </html>
